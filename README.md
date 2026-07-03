@@ -1,9 +1,9 @@
 # PowerShell-HttpClientWrapper
 Wrapper class for System.Net.Http.HttpClient for use in PowerShell since Invoke-WebRequest doesn't work for most situations. Tested only on PowerShell 5.1. 
 
-**WARNING**
+**WARNING**:
+
 This is written to work with self-signed certificates, thus **explicitly turns off certificate validation**. Ensure you are aware of this before using.
-**WARNING**
 
 # Usage
 Only provides the following HTTP methods, extend it if you need other methods: 
