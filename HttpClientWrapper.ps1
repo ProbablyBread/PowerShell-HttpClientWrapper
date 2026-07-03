@@ -49,7 +49,7 @@ class HttpClientWrapper {
     [string] Delete([string]$path) {
         $result = $this.client.DeleteAsync($path).GetAwaiter().GetResult()
 
-        return $result.Content.ReadAsStringAsync().Result
+        return $result
     }
 
     # delete request with a payload, returns a string
