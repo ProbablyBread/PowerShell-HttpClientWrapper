@@ -19,6 +19,13 @@ Content type is assumed to be `application/json` by default. Override it using e
 $client = [HttpClientWrapper]::new()
 $client.Get("https://[url to something]/path")
 
+# set url
+$client.SetUrl("https://[baseurl to something]")
+# set content type
+$client.SetContentType("text/plain")
+# set other headers
+$client.SetHeader("Authorization", "Basic [basic-auth-here]")
+
 # create a new client object with a url
 $client = [HttpClientWrapper]::new("https://[baseurl to something]")
 $client.Get("/somepath")
