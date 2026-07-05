@@ -77,7 +77,7 @@ class HttpClientWrapper {
         return $result.Content.ReadAsStringAsync().Result
     }
 
-    # internal method to set http options, enforces at tls1.2 & tls1.3, accepts any certificate without validation
+    # internal method to set http options, enforces at least tls1.2 & tls1.3, accepts any certificate without validation
     hidden [void] SetOptions() {
         $this.handler = [System.Net.Http.HttpClientHandler]::new()
         $this.handler.ServerCertificateCustomValidationCallback = [System.Net.Http.HttpClientHandler]::DangerousAcceptAnyServerCertificateValidator
