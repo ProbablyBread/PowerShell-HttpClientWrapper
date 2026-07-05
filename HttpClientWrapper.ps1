@@ -20,11 +20,12 @@ class HttpClientWrapper {
         $this.client.BaseAddress = $url 
 
         $this.contentType = $contentType
-        $this.AddHeader("Accept", $this.contentType)
+        $this.SetHeader("Accept", $this.contentType)
     }
 
     # adds a header to the client settings
-    [void] AddHeader([string]$key, [string]$value) {
+    [void] SetHeader([string]$key, [string]$value) {
+        $this.client.DefaultRequestHeaders.Remove($key) | Out-Null
         $this.client.DefaultRequestHeaders.Add($key, $value) 
     }
 
@@ -35,45 +36,42 @@ class HttpClientWrapper {
 
     # sets the content type of all requests
     [void] SetContentType([string]$contentType) {
-        $this.AddHeader("Accept", $contentType)
+        $this.contentType = $contentType
+        $this.SetHeader("Accept", $contentType)
     }
 
     # get request, returns a string
     [string] Get([string]$path) {
-        $result = $this.client.GetStringAsync($path).GetAwaiter().GetResult()
-
-        return $result
+        return $this.AsyncRequest($path, $null, "GET")
     }
 
     # delete request without a payload, returns a string
     [string] Delete([string]$path) {
-        $result = $this.client.DeleteAsync($path).GetAwaiter().GetResult()
-
-        return $result
+        return $this.AsyncRequest($path, $null, "DELETE") 
     }
 
     # delete request with a payload, returns a string
     [string] Delete([string]$path, $deleteContent) {
-        $content = [System.Net.Http.HttpRequestMessage]::new("DELETE", $path)
-        $content.Content = [System.Net.Http.StringContent]::new($deleteContent, [System.Text.Encoding]::UTF8, $this.contentType)
-
-        $result = $this.client.SendAsync($content).GetAwaiter().GetResult()
-        return $result.Content.ReadAsStringAsync().Result
+        return $this.AsyncRequest($path, $deleteContent, "DELETE")
     }
 
     # post request, returns a string
     [string] Post([string]$path, $postContent) {
-        $content = [System.Net.Http.HttpRequestMessage]::new("POST", $path)
-        $content.Content = [System.Net.Http.StringContent]::new($postContent, [System.Text.Encoding]::UTF8, $this.contentType)
-
-        $result = $this.client.SendAsync($content).GetAwaiter().GetResult()
-        return $result.Content.ReadAsStringAsync().Result
+        return $this.AsyncRequest($path, $postContent, "POST")
     }
 
     # put request, returns a string
     [string] Put([string]$path, $putContent) {
-        $content = [System.Net.Http.HttpRequestMessage]::new("PUT", $path)
-        $content.Content = [System.Net.Http.StringContent]::new($putContent, [System.Text.Encoding]::UTF8, $this.contentType)
+        return $this.AsyncRequest($path, $putContent, "PUT")
+    }
+
+    # internal method for abstracting SendAsync requests for all HTTP methods 
+    hidden [string] AsyncRequest([string]$path, $requestContent, [string]$requestType) {
+        $content = [System.Net.Http.HttpRequestMessage]::new($requestType, $path)
+
+        if ($requestContent -ne $null) {
+            $content.Content = [System.Net.Http.StringContent]::new($requestContent, [System.Text.Encoding]::UTF8, $this.contentType)
+        }
 
         $result = $this.client.SendAsync($content).GetAwaiter().GetResult()
         return $result.Content.ReadAsStringAsync().Result
@@ -83,7 +81,7 @@ class HttpClientWrapper {
     hidden [void] SetOptions() {
         $this.handler = [System.Net.Http.HttpClientHandler]::new()
         $this.handler.ServerCertificateCustomValidationCallback = [System.Net.Http.HttpClientHandler]::DangerousAcceptAnyServerCertificateValidator
-        $this.handler.SslProtocols = [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls13
+        $this.handler.SslProtocols = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 
         $this.client = [System.Net.Http.HttpClient]::new($this.handler)
     }
