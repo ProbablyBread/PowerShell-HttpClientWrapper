@@ -1,5 +1,5 @@
 # PowerShell-HttpClientWrapper
-Wrapper class for System.Net.Http.HttpClient for use in PowerShell since Invoke-WebRequest doesn't work for most situations. Tested only on PowerShell 5.1. 
+Wrapper class for System.Net.Http.HttpClient for use in PowerShell since Invoke-WebRequest doesn't work for most situations on PowerShell 5.1. Tested only on PowerShell 5.1, but should work any other version >=5.1. 
 
 **WARNING**:
 
