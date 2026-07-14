@@ -55,7 +55,12 @@ class HttpClientWrapper {
         return $this.AsyncRequest($path, $deleteContent, "DELETE")
     }
 
-    # post request, returns a string
+    # post request without a payload, returns a string
+    [string] Post([string]$path) {
+        return $this.AsyncRequest($path, $null, "POST")
+    }
+
+    # post request with a payload, returns a string
     [string] Post([string]$path, $postContent) {
         return $this.AsyncRequest($path, $postContent, "POST")
     }
