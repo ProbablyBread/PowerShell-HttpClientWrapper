@@ -98,9 +98,11 @@ class HttpClientWrapper {
         $result = $this.client.SendAsync($content).GetAwaiter().GetResult()
 
         return [PSCustomObject]@{
-            HTTPVersion = $result.Version
-            Content     = $result.Content.ReadAsStringAsync().Result
-            StatusCode  = $result.StatusCode # ref https://learn.microsoft.com/en-us/dotnet/api/system.net.httpstatuscode?view=net-10.0
+            HTTPVersion         = $result.Version
+            Content             = $result.Content.ReadAsStringAsync().Result
+            Headers             = $result.Headers
+            StatusCode          = $result.StatusCode # ref https://learn.microsoft.com/en-us/dotnet/api/system.net.httpstatuscode?view=net-10.0
+            IsSuccessStatusCode = $result.IsSuccessStatusCode
         }
     }
 
