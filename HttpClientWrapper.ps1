@@ -1,7 +1,7 @@
 class HttpClientWrapper {
     hidden [System.Net.Http.HttpClient]$client
     hidden [System.Net.Http.HttpClientHandler]$handler
-    hidden [string]$contentType = "application/json"
+    hidden [string]$contentType = "text/html; charset=UTF-8"
 
     # default ctor
     HttpClientWrapper() {
@@ -34,44 +34,61 @@ class HttpClientWrapper {
         $this.client.BaseAddress = $url
     }
 
+    [string] GetUrl() {
+        return $this.client.BaseAddress
+    }
+
     # sets the content type of all requests
     [void] SetContentType([string]$contentType) {
         $this.contentType = $contentType
         $this.SetHeader("Accept", $contentType)
     }
 
-    # get request, returns a string
-    [string] Get([string]$path) {
+    [string] GetContentType() {
+        return $this.contentType
+    }
+
+    # sets the timeout in seconds for all requests
+    [void] SetTimeout([int]$timeout) {
+        $this.client.Timeout = [System.TimeSpan]::FromSeconds($timeout)
+    }
+
+    [timespan] GetTimeout() {
+        return $this.client.Timeout
+    }
+
+    # get request, returns a PSCustomObject from AsyncRequest
+    [PSCustomObject] Get([string]$path) {
         return $this.AsyncRequest($path, $null, "GET")
     }
 
-    # delete request without a payload, returns a string
-    [string] Delete([string]$path) {
+    # delete request without a payload, returns a PSCustomObject from AsyncRequest
+    [PSCustomObject] Delete([string]$path) {
         return $this.AsyncRequest($path, $null, "DELETE") 
     }
 
-    # delete request with a payload, returns a string
-    [string] Delete([string]$path, $deleteContent) {
+    # delete request with a payload, returns a PSCustomObject from AsyncRequest 
+    [PSCustomObject] Delete([string]$path, $deleteContent) {
         return $this.AsyncRequest($path, $deleteContent, "DELETE")
     }
 
-    # post request without a payload, returns a string
-    [string] Post([string]$path) {
+    # post request without a payload, returns a PSCustomObject from AsyncRequest
+    [PSCustomObject] Post([string]$path) {
         return $this.AsyncRequest($path, $null, "POST")
     }
 
-    # post request with a payload, returns a string
-    [string] Post([string]$path, $postContent) {
+    # post request with a payload, returns a PSCustomObject from AsyncRequest
+    [PSCustomObject] Post([string]$path, $postContent) {
         return $this.AsyncRequest($path, $postContent, "POST")
     }
 
-    # put request, returns a string
-    [string] Put([string]$path, $putContent) {
+    # put request, returns a PSCustomObject from AsyncRequest
+    [PSCustomObject] Put([string]$path, $putContent) {
         return $this.AsyncRequest($path, $putContent, "PUT")
     }
 
     # internal method for abstracting SendAsync requests for all HTTP methods 
-    hidden [string] AsyncRequest([string]$path, $requestContent, [string]$requestType) {
+    hidden [PSCustomObject] AsyncRequest([string]$path, $requestContent, [string]$requestType) {
         $content = [System.Net.Http.HttpRequestMessage]::new($requestType, $path)
 
         if ($requestContent -ne $null) {
@@ -79,7 +96,12 @@ class HttpClientWrapper {
         }
 
         $result = $this.client.SendAsync($content).GetAwaiter().GetResult()
-        return $result.Content.ReadAsStringAsync().Result
+
+        return [PSCustomObject]@{
+            HTTPVersion = $result.Version
+            Content     = $result.Content.ReadAsStringAsync().Result
+            StatusCode  = $result.StatusCode # ref https://learn.microsoft.com/en-us/dotnet/api/system.net.httpstatuscode?view=net-10.0
+        }
     }
 
     # internal method to set http options, enforces at least tls1.2 & tls1.3, accepts any certificate without validation
@@ -89,5 +111,6 @@ class HttpClientWrapper {
         $this.handler.SslProtocols = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 
         $this.client = [System.Net.Http.HttpClient]::new($this.handler)
+        $this.client.Timeout = [System.TimeSpan]::FromSeconds(10)
     }
 }
