@@ -12,7 +12,7 @@ Only provides the following HTTP methods, extend it if you need other methods:
 - Delete (with and without payload)
 - Put
 
-Content type is assumed to be `application/json` by default. Override it using either the class method or the param constructor.
+Content type is assumed to be `text/html; charset=UTF-8` by default. Override it using either the class method or the param constructor.
 
 ```powershell
 # create a new client object without a url
